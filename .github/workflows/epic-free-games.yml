@@ -1,0 +1,35 @@
+name: Epic Free Games to Discord
+
+on:
+  schedule:
+    # Epic rotates its free games every Thursday at 11:00 AM US Eastern
+    # (15:00 UTC in summer, 16:00 UTC in winter). 17:00 UTC covers both
+    # and leaves a buffer for GitHub's scheduling delays.
+    - cron: "0 17 * * 4"
+  workflow_dispatch: # lets you run it manually from the Actions tab
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Post free games to Discord
+        run: python epic_free_games.py
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # EPIC_COUNTRY: "US"   # uncomment/change to use another region
